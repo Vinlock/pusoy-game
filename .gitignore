@@ -1,2 +1,5 @@
+# Exclude WebStorm files
+.idea
+
 # Project exclude paths
 /server/node_modules/
