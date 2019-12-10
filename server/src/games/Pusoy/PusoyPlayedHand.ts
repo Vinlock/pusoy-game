@@ -1,17 +1,57 @@
-import {Card, Rank, Suit} from '../../Deck'
+import { Card, Rank } from '../../Deck'
 
 class PusoyPlayedHand {
   private cards: Card[]
 
+  public readonly isValidHand: boolean = false
+
+  public readonly isDoubles: boolean = false
+  public readonly isStraight: boolean = false
+  public readonly isFlush: boolean = false
+  public readonly isStraightFlush: boolean = false
+  public readonly isRoyalFlush: boolean = false
+  public readonly isFourOfAKind: boolean = false
+  public readonly isFullHouse: boolean = false
+
   constructor(hand: Card[]) {
     this.cards = hand
+
+    this.isDoubles = this.checkIsDoubles()
+    if (!this.isDoubles) {
+      this.isStraight = this.checkIsStraight()
+      this.isFlush = this.checkIsFlush()
+      this.isStraightFlush = this.isStraight && this.isFlush
+      this.isRoyalFlush = this.checkIsRoyalFlush()
+      this.isFourOfAKind = this.checkIsFourOfAKind()
+      this.isFullHouse = this.checkIsFullHouse()
+    }
+
+    if ([
+      this.isDoubles,
+      this.isStraight,
+      this.isFlush,
+      this.isStraightFlush,
+      this.isRoyalFlush,
+      this.isFourOfAKind,
+      this.isFullHouse,
+    ].some((test: boolean) => test) || (this.numCards === 1)) {
+      this.isValidHand = true
+    }
   }
 
   public get numCards(): number {
     return this.cards.length
   }
 
-  public get isStraight(): boolean {
+  private checkIsDoubles(): boolean {
+    if (this.numCards !== 2) {
+      return false
+    }
+
+    return this.cards[0].rank === this.cards[1].rank
+  }
+
+  private checkIsStraight(): boolean {
     const ranks = this.cards.map((card: Card) => {
       return card.rank
     }).filter((v: Rank, i: number, self: Rank[]) => {
@@ -40,7 +80,7 @@ class PusoyPlayedHand {
     })
   }
 
-  public get isFlush(): boolean {
+  private checkIsFlush(): boolean {
     if (this.numCards !== 5) {
       return false
     }
@@ -50,11 +90,7 @@ class PusoyPlayedHand {
     })
   }
 
-  public get isStraightFlush(): boolean {
-    return this.isStraight && this.isFlush
-  }
-
-  public get isRoyalFlush(): boolean {
+  private checkIsRoyalFlush(): boolean {
     if (this.numCards !== 5) {
       return false
     }
@@ -74,10 +110,10 @@ class PusoyPlayedHand {
         return true
       }
       return false
-    }) && this.isFlush
+    }) && (this.isFlush || this.checkIsFlush())
   }
 
-  public get isFullHouse(): boolean {
+  private checkIsFullHouse(): boolean {
     if (this.numCards !== 5) {
       return false
     }
@@ -112,7 +148,7 @@ class PusoyPlayedHand {
       (group1.length === 2 && group2.length === 3)
   }
 
-  public get isFourOfAKind(): boolean {
+  private checkIsFourOfAKind(): boolean {
     if (this.numCards !== 5) {
       return false
     }
