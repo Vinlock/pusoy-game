@@ -19,7 +19,7 @@ class PusoyPlayedHand extends CardStack {
     super()
 
     const seen = new Set();
-    const hasDuplicates = hand.some(function(card: Card) {
+    const hasDuplicates = hand.some((card: Card) => {
       return seen.size === seen.add(`${card.rank}_${card.suit}`).size;
     });
 
