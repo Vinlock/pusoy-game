@@ -3,9 +3,9 @@ module.exports = {
   "displayName": "Pusoy Server",
   "rootDir": "./",
   "roots": [
-    "<rootDir>/src"
+    "<rootDir>/src",
   ],
   "transform": {
-    "^.+\\.tsx?$": "ts-jest"
+    "^.+\\.tsx?$": "ts-jest",
   },
 };
