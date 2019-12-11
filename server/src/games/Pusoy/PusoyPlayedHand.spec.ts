@@ -218,16 +218,8 @@ describe('PusoyPlayedHand', () => {
   })
 
   describe('beats()', () => {
-    it('should beat the hand', async () => {
-      const hand = new PusoyPlayedHand([
-        new Card(Suit.DIAMONDS, Rank.TWO),
-        new Card(Suit.DIAMONDS, Rank.THREE),
-        new Card(Suit.DIAMONDS, Rank.FOUR),
-        new Card(Suit.DIAMONDS, Rank.SIX),
-        new Card(Suit.DIAMONDS, Rank.KING),
-      ])
-
-      const otherHand = new PusoyPlayedHand([
+    it('should beat the lower suit royal flush with the higher suit royal flush', async () => {
+      const higherSuitRoyalFlush = new PusoyPlayedHand([
         new Card(Suit.DIAMONDS, Rank.TEN),
         new Card(Suit.DIAMONDS, Rank.QUEEN),
         new Card(Suit.DIAMONDS, Rank.FIVE),
@@ -235,7 +227,55 @@ describe('PusoyPlayedHand', () => {
         new Card(Suit.DIAMONDS, Rank.ACE),
       ])
 
-      return expect(otherHand.beats(hand)).toBeTruthy()
+      const lowerSuitRoyalFlush = new PusoyPlayedHand([
+        new Card(Suit.SPADES, Rank.TEN),
+        new Card(Suit.SPADES, Rank.QUEEN),
+        new Card(Suit.SPADES, Rank.FIVE),
+        new Card(Suit.SPADES, Rank.JACK),
+        new Card(Suit.SPADES, Rank.ACE),
+      ])
+
+      return expect(higherSuitRoyalFlush.beats(lowerSuitRoyalFlush)).toBeTruthy()
+    })
+
+    it('should beat the lowerFlush', async () => {
+      const higherFlush = new PusoyPlayedHand([
+        new Card(Suit.DIAMONDS, Rank.TWO),
+        new Card(Suit.DIAMONDS, Rank.THREE),
+        new Card(Suit.DIAMONDS, Rank.FOUR),
+        new Card(Suit.DIAMONDS, Rank.SIX),
+        new Card(Suit.DIAMONDS, Rank.KING),
+      ])
+
+      const lowerFlush = new PusoyPlayedHand([
+        new Card(Suit.DIAMONDS, Rank.TEN),
+        new Card(Suit.DIAMONDS, Rank.QUEEN),
+        new Card(Suit.DIAMONDS, Rank.FIVE),
+        new Card(Suit.DIAMONDS, Rank.JACK),
+        new Card(Suit.DIAMONDS, Rank.ACE),
+      ])
+
+      return expect(higherFlush.beats(lowerFlush)).toBeTruthy()
+    })
+
+    it('should beat the straight flush with the royal flush', async () => {
+      const royalFlush = new PusoyPlayedHand([
+        new Card(Suit.DIAMONDS, Rank.TEN),
+        new Card(Suit.DIAMONDS, Rank.JACK),
+        new Card(Suit.DIAMONDS, Rank.QUEEN),
+        new Card(Suit.DIAMONDS, Rank.KING),
+        new Card(Suit.DIAMONDS, Rank.ACE),
+      ])
+
+      const straightFlush = new PusoyPlayedHand([
+        new Card(Suit.CLUBS, Rank.FIVE),
+        new Card(Suit.CLUBS, Rank.SIX),
+        new Card(Suit.CLUBS, Rank.SEVEN),
+        new Card(Suit.CLUBS, Rank.EIGHT),
+        new Card(Suit.CLUBS, Rank.NINE),
+      ])
+
+      return expect(royalFlush.beats(straightFlush)).toBeTruthy()
     })
   })
 })

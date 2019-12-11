@@ -45,6 +45,16 @@ class PusoyPlayedHand extends CardStack {
           this.fiveCardHandType = HandRank.FLUSH
         }
 
+        this.isFullHouse = this.checkIsFullHouse()
+        if (this.isFullHouse) {
+          this.fiveCardHandType = HandRank.FULL_HOUSE
+        }
+
+        this.isFourOfAKind = this.checkIsFourOfAKind()
+        if (this.isFourOfAKind) {
+          this.fiveCardHandType = HandRank.FOUR_OF_A_KIND
+        }
+
         this.isStraightFlush = this.isStraight && this.isFlush
         if (this.isStraightFlush) {
           this.fiveCardHandType = HandRank.STRAIGHT_FLUSH
@@ -53,16 +63,6 @@ class PusoyPlayedHand extends CardStack {
         this.isRoyalFlush = this.checkIsRoyalFlush()
         if (this.isRoyalFlush) {
           this.fiveCardHandType = HandRank.ROYAL_FLUSH
-        }
-
-        this.isFourOfAKind = this.checkIsFourOfAKind()
-        if (this.isFourOfAKind) {
-          this.fiveCardHandType = HandRank.FOUR_OF_A_KIND
-        }
-
-        this.isFullHouse = this.checkIsFullHouse()
-        if (this.isFullHouse) {
-          this.fiveCardHandType = HandRank.FULL_HOUSE
         }
       } else {
         throw new Error('Invalid number of cards, must be 1, 2, or 5')
@@ -88,12 +88,7 @@ class PusoyPlayedHand extends CardStack {
     }
 
     if (hand.isSingle) {
-      const thisCard = this.cards[0]
-      const opposingCard = hand.cards[0]
-      if (thisCard.rank === opposingCard.rank) {
-        return thisCard.suit > opposingCard.suit
-      }
-      return thisCard.rank > opposingCard.rank
+      return this.cards[0].beats(hand.cards[0])
     } else if (hand.isDoubles) {
       const thisRank = this.cards[0].rank
       const opposingRank = hand.cards[0].rank
@@ -103,7 +98,7 @@ class PusoyPlayedHand extends CardStack {
         return thisHighSuit > opposingHighSuit
       }
       return thisRank > opposingRank
-    } else if (hand.fiveCardHand) {
+    } else if (hand.fiveCardHand && this.fiveCardHandType) {
       if (this.fiveCardHandType === hand.fiveCardHandType) {
         if (this.isRoyalFlush) {
           const thisCollectiveSuit: Suit = this.cards[0].suit
@@ -142,7 +137,7 @@ class PusoyPlayedHand extends CardStack {
             }
             const thisHighCard: Card = this.cards.sort(greatestToLeast)[0]
             const handHighCard: Card = hand.cards.sort(greatestToLeast)[0]
-            return thisHighCard > handHighCard
+            return thisHighCard.beats(handHighCard)
           }
           return this.cards[0].suit > hand.cards[0].suit
         } else if (this.isStraight) {
@@ -156,6 +151,7 @@ class PusoyPlayedHand extends CardStack {
       }
       return this.fiveCardHandType > hand.fiveCardHandType
     }
+    return false
   }
 
   public get numCards(): number {
@@ -222,14 +218,16 @@ class PusoyPlayedHand extends CardStack {
       Rank.TEN,
     ]
 
-    return this.cards.every((card: Card) => {
+    const hasEachCard: boolean = this.cards.every((card: Card) => {
       if (neededRanks.includes(card.rank)) {
         const indexToDelete: number = neededRanks.indexOf(card.rank)
         delete neededRanks[indexToDelete]
         return true
       }
       return false
-    }) && (this.isFlush || this.checkIsFlush())
+    })
+
+    return hasEachCard && (this.isFlush || this.checkIsFlush())
   }
 
   private checkIsFullHouse(): boolean {
@@ -288,8 +286,21 @@ class PusoyPlayedHand extends CardStack {
       }
     })
 
-    return (group1.length === 4 && group2.length === 1) ||
+    const correctLengths: boolean = (group1.length === 4 && group2.length === 1) ||
       (group1.length === 1 && group2.length === 4)
+
+    if (!correctLengths) {
+      return false
+    }
+
+    let fourGroup = group1
+    if (group2.length === 4) {
+      fourGroup = group2
+    }
+
+    return fourGroup.every((card: Card) => {
+      return card.rank === fourGroup[0].rank
+    })
   }
 }
 
