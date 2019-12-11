@@ -313,10 +313,4 @@ enum HandRank {
   ROYAL_FLUSH = 5,
 }
 
-type FullHouseBreakdown = {
-  highCard: Card
-  full: Rank
-  of: Rank
-}
-
 export default PusoyPlayedHand
