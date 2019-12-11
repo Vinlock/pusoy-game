@@ -1,7 +1,30 @@
-import { Card, Rank, Suit } from '../../Deck'
+import {Card, Rank, Suit} from '../../Deck'
 import PusoyPlayedHand from './PusoyPlayedHand'
 
 describe('PusoyPlayedHand', () => {
+  it('should fail to instantiate due to duplicate card', async () => {
+    return expect(() => new PusoyPlayedHand([
+      new Card(Suit.HEARTS, Rank.FOUR),
+      new Card(Suit.HEARTS, Rank.EIGHT),
+      new Card(Suit.HEARTS, Rank.EIGHT),
+      new Card(Suit.HEARTS, Rank.SEVEN),
+      new Card(Suit.HEARTS, Rank.SIX),
+    ])).toThrow(new Error('Duplicate card detected'))
+  })
+
+  it('should fail to instantiate due to invalid number of cards', async () => {
+    return expect(() => new PusoyPlayedHand([
+      new Card(Suit.HEARTS, Rank.QUEEN),
+      new Card(Suit.DIAMONDS, Rank.JACK),
+      new Card(Suit.CLUBS, Rank.TEN),
+    ])).toThrow(new Error('Invalid number of cards, must be 1, 2, or 5'))
+  })
+
+  it('should fail to instantiate due to invalid number of cards', async () => {
+    return expect(() => new PusoyPlayedHand([]))
+      .toThrow(new Error('Invalid number of cards, must be 1, 2, or 5'))
+  })
+
   describe('get isStraight()', () => {
     it('should be a straight', async () => {
       const hand = new PusoyPlayedHand([
@@ -191,6 +214,28 @@ describe('PusoyPlayedHand', () => {
       ])
 
       return expect(hand.isFourOfAKind).toBeFalsy()
+    })
+  })
+
+  describe('beats()', () => {
+    it('should beat the hand', async () => {
+      const hand = new PusoyPlayedHand([
+        new Card(Suit.DIAMONDS, Rank.TWO),
+        new Card(Suit.DIAMONDS, Rank.THREE),
+        new Card(Suit.DIAMONDS, Rank.FOUR),
+        new Card(Suit.DIAMONDS, Rank.SIX),
+        new Card(Suit.DIAMONDS, Rank.KING),
+      ])
+
+      const otherHand = new PusoyPlayedHand([
+        new Card(Suit.DIAMONDS, Rank.TEN),
+        new Card(Suit.DIAMONDS, Rank.QUEEN),
+        new Card(Suit.DIAMONDS, Rank.FIVE),
+        new Card(Suit.DIAMONDS, Rank.JACK),
+        new Card(Suit.DIAMONDS, Rank.ACE),
+      ])
+
+      return expect(otherHand.beats(hand)).toBeTruthy()
     })
   })
 })

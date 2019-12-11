@@ -1,8 +1,7 @@
 import { EventEmitter } from 'events'
+import CardStack from './CardStack'
 
-class Deck extends EventEmitter {
-  private readonly cards: Card[]
-
+class Deck extends CardStack {
   constructor() {
     super()
     this.cards = []
@@ -30,21 +29,10 @@ class Deck extends EventEmitter {
       }
       numShuffles--
     } while (numShuffles > 0)
-    this.emit('shuffle', this, times)
-  }
-
-  public onShuffle(callback: (deck: Deck, times: number) => void): void {
-    this.on('shuffle', callback)
   }
 
   public deal(): Card {
-    const card: Card = this.cards.pop()
-    this.emit('deal', card)
-    return card
-  }
-
-  public onDeal(callback: (card: Card) => void): void {
-    this.on('deal', callback)
+    return this.cards.pop()
   }
 
   public get numCards(): number {
@@ -67,6 +55,13 @@ export class Card {
 
   public is(card: Card): boolean {
     return (card.rank === this.rank && card.suit === this.suit)
+  }
+
+  public beats(card: Card): boolean {
+    if (card.rank === this.rank) {
+      return this.suit > card.suit
+    }
+    return this.rank > card.rank
   }
 }
 

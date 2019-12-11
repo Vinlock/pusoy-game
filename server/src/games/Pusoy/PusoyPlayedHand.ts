@@ -1,29 +1,72 @@
-import { Card, Rank } from '../../Deck'
+import {Card, Rank, Suit} from '../../Deck'
+import CardStack from '../../CardStack'
 
-class PusoyPlayedHand {
-  private cards: Card[]
-
+class PusoyPlayedHand extends CardStack {
   public readonly isValidHand: boolean = false
 
+  public readonly isSingle: boolean = false
   public readonly isDoubles: boolean = false
+  public readonly fiveCardHand: boolean = false
   public readonly isStraight: boolean = false
   public readonly isFlush: boolean = false
   public readonly isStraightFlush: boolean = false
   public readonly isRoyalFlush: boolean = false
   public readonly isFourOfAKind: boolean = false
   public readonly isFullHouse: boolean = false
+  public readonly fiveCardHandType: HandRank
 
   constructor(hand: Card[]) {
+    super()
+
+    const seen = new Set();
+    const hasDuplicates = hand.some(function(card: Card) {
+      return seen.size === seen.add(`${card.rank}_${card.suit}`).size;
+    });
+
+    if (hasDuplicates) {
+      throw new Error('Duplicate card detected')
+    }
+
     this.cards = hand
 
-    this.isDoubles = this.checkIsDoubles()
-    if (!this.isDoubles) {
-      this.isStraight = this.checkIsStraight()
-      this.isFlush = this.checkIsFlush()
-      this.isStraightFlush = this.isStraight && this.isFlush
-      this.isRoyalFlush = this.checkIsRoyalFlush()
-      this.isFourOfAKind = this.checkIsFourOfAKind()
-      this.isFullHouse = this.checkIsFullHouse()
+    this.isSingle = this.numCards === 1
+    if (!this.isSingle) {
+      this.isDoubles = this.checkIsDoubles()
+      if (!this.isDoubles && this.numCards === 5) {
+        this.fiveCardHand = true
+
+        this.isStraight = this.checkIsStraight()
+        if (this.isStraight) {
+          this.fiveCardHandType = HandRank.STRAIGHT
+        }
+
+        this.isFlush = this.checkIsFlush()
+        if (this.isFlush) {
+          this.fiveCardHandType = HandRank.FLUSH
+        }
+
+        this.isStraightFlush = this.isStraight && this.isFlush
+        if (this.isStraightFlush) {
+          this.fiveCardHandType = HandRank.STRAIGHT_FLUSH
+        }
+
+        this.isRoyalFlush = this.checkIsRoyalFlush()
+        if (this.isRoyalFlush) {
+          this.fiveCardHandType = HandRank.ROYAL_FLUSH
+        }
+
+        this.isFourOfAKind = this.checkIsFourOfAKind()
+        if (this.isFourOfAKind) {
+          this.fiveCardHandType = HandRank.FOUR_OF_A_KIND
+        }
+
+        this.isFullHouse = this.checkIsFullHouse()
+        if (this.isFullHouse) {
+          this.fiveCardHandType = HandRank.FULL_HOUSE
+        }
+      } else {
+        throw new Error('Invalid number of cards, must be 1, 2, or 5')
+      }
     }
 
     if ([
@@ -36,6 +79,82 @@ class PusoyPlayedHand {
       this.isFullHouse,
     ].some((test: boolean) => test) || (this.numCards === 1)) {
       this.isValidHand = true
+    }
+  }
+
+  public beats(hand: PusoyPlayedHand): boolean {
+    if (hand.numCards !== this.numCards) {
+      throw new Error('Invalid number of cards, cannot be compared.')
+    }
+
+    if (hand.isSingle) {
+      const thisCard = this.cards[0]
+      const opposingCard = hand.cards[0]
+      if (thisCard.rank === opposingCard.rank) {
+        return thisCard.suit > opposingCard.suit
+      }
+      return thisCard.rank > opposingCard.rank
+    } else if (hand.isDoubles) {
+      const thisRank = this.cards[0].rank
+      const opposingRank = hand.cards[0].rank
+      if (thisRank === opposingRank) {
+        const thisHighSuit = this.cards[0].suit > this.cards[1].suit ? this.cards[0].suit : this.cards[1].suit
+        const opposingHighSuit = hand.cards[0].suit > hand.cards[1].suit ? hand.cards[0].suit : hand.cards[1].suit
+        return thisHighSuit > opposingHighSuit
+      }
+      return thisRank > opposingRank
+    } else if (hand.fiveCardHand) {
+      if (this.fiveCardHandType === hand.fiveCardHandType) {
+        if (this.isRoyalFlush) {
+          const thisCollectiveSuit: Suit = this.cards[0].suit
+          const opposingCollectiveSuit: Suit = hand.cards[0].suit
+          return thisCollectiveSuit > opposingCollectiveSuit
+        } else if (this.isStraightFlush) {
+          const greatestToLeast = (a: Card, b: Card) => {
+            return b.rank - a.rank
+          }
+          const thisSortedCards: Card[] = this.cards.sort(greatestToLeast)
+          const handSortedCards: Card[] = hand.cards.sort(greatestToLeast)
+          if (thisSortedCards[0].rank === handSortedCards[0].rank) {
+            return thisSortedCards[0].suit > handSortedCards[0].suit
+          }
+          return thisSortedCards[0].rank > handSortedCards[0].rank
+        } else if (this.isFourOfAKind) {
+          return this.cards[0].rank > hand.cards[0].rank
+        } else if (this.isFullHouse) {
+          const getFullRank = (fullHouse: Card[]): Rank => {
+            const ordered: Card[] = fullHouse.sort((a: Card, b: Card): number => {
+              return b.rank - a.rank
+            })
+            let full: Rank = ordered[3].rank
+            if (ordered[0].rank === ordered[2].rank) {
+              full = ordered[0].rank
+            }
+            return full
+          }
+          const thisBreakdown: Rank = getFullRank(this.cards)
+          const handBreakdown: Rank = getFullRank(hand.cards)
+          return thisBreakdown > handBreakdown
+        } else if (this.isFlush) {
+          if (this.cards[0].suit === hand.cards[0].suit) {
+            const greatestToLeast = (a: Card, b: Card) => {
+              return b.rank - a.rank
+            }
+            const thisHighCard: Card = this.cards.sort(greatestToLeast)[0]
+            const handHighCard: Card = hand.cards.sort(greatestToLeast)[0]
+            return thisHighCard > handHighCard
+          }
+          return this.cards[0].suit > hand.cards[0].suit
+        } else if (this.isStraight) {
+          const greatestToLeast = (a: Card, b: Card) => {
+            return b.rank - a.rank
+          }
+          const thisHighCard: Card = this.cards.sort(greatestToLeast)[0]
+          const handHighCard: Card = hand.cards.sort(greatestToLeast)[0]
+          return thisHighCard.beats(handHighCard)
+        }
+      }
+      return this.fiveCardHandType > hand.fiveCardHandType
     }
   }
 
@@ -172,6 +291,21 @@ class PusoyPlayedHand {
     return (group1.length === 4 && group2.length === 1) ||
       (group1.length === 1 && group2.length === 4)
   }
+}
+
+enum HandRank {
+  STRAIGHT = 0,
+  FLUSH = 1,
+  FULL_HOUSE = 2,
+  FOUR_OF_A_KIND = 3,
+  STRAIGHT_FLUSH = 4,
+  ROYAL_FLUSH = 5,
+}
+
+type FullHouseBreakdown = {
+  highCard: Card
+  full: Rank
+  of: Rank
 }
 
 export default PusoyPlayedHand

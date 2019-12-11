@@ -1,9 +1,9 @@
 import { Card } from '../../Deck'
+import CardStack from '../../CardStack'
 
-class PusoyHand {
-  private readonly cards: Card[]
-
+class PusoyHand extends CardStack {
   constructor(cards: Card[] = []) {
+    super()
     this.cards = cards
   }
 

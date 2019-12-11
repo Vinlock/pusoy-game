@@ -1,4 +1,4 @@
-import {allRanks, allSuits, Card, Rank, Suit} from './Deck'
+import { allRanks, allSuits, Card, Rank, Suit } from './Deck'
 
 describe('Deck', () => {
   const allCards: Card[] = []

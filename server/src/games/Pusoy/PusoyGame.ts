@@ -1,6 +1,7 @@
 import Game from '../Game'
 import PusoyPlayer from './PusoyPlayer'
 import Deck from '../../Deck'
+import PusoyPile from './PusoyPile'
 
 const MAX_CARDS_TO_DEAL = 15
 
@@ -8,6 +9,8 @@ class PusoyGame extends Game {
   private players: { [key: string]: PusoyPlayer }
 
   private deck: Deck = new Deck()
+
+  private pile: PusoyPile = new PusoyPile()
 
   constructor(numPlayers: number) {
     super()
