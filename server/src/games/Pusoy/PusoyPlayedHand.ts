@@ -1,4 +1,4 @@
-import {Card, Rank, Suit} from '../../Deck'
+import { Card, Rank, Suit } from '../../Deck'
 import CardStack from '../../CardStack'
 
 class PusoyPlayedHand extends CardStack {
