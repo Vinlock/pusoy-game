@@ -100,11 +100,11 @@ class PusoyPlayedHand extends CardStack {
       return thisRank > opposingRank
     } else if (hand.fiveCardHand && this.fiveCardHandType) {
       if (this.fiveCardHandType === hand.fiveCardHandType) {
-        if (this.isRoyalFlush) {
+        if (this.isRoyalFlush && hand.isRoyalFlush) {
           const thisCollectiveSuit: Suit = this.cards[0].suit
           const opposingCollectiveSuit: Suit = hand.cards[0].suit
           return thisCollectiveSuit > opposingCollectiveSuit
-        } else if (this.isStraightFlush) {
+        } else if (this.isStraightFlush && hand.isStraightFlush) {
           const greatestToLeast = (a: Card, b: Card) => {
             return b.rank - a.rank
           }
@@ -114,9 +114,37 @@ class PusoyPlayedHand extends CardStack {
             return thisSortedCards[0].suit > handSortedCards[0].suit
           }
           return thisSortedCards[0].rank > handSortedCards[0].rank
-        } else if (this.isFourOfAKind) {
-          return this.cards[0].rank > hand.cards[0].rank
-        } else if (this.isFullHouse) {
+        } else if (this.isFourOfAKind && hand.isFourOfAKind) {
+          type FourOfAKindBreakDown = {
+            fourOfAKind: Card[]
+            extraCard: Card
+          }
+
+          const reduceFn = (total: FourOfAKindBreakDown, currentCard: Card): FourOfAKindBreakDown => {
+            if (total.fourOfAKind.length === 0 && total.extraCard === null) {
+              total.extraCard = currentCard
+            } else if (total.fourOfAKind.length > 0 && total.fourOfAKind[0].rank === currentCard.rank) {
+              total.fourOfAKind.push(currentCard)
+            } else if (total.fourOfAKind.length === 0 && total.extraCard !== null && currentCard.rank !== total.extraCard.rank) {
+              total.fourOfAKind.push(currentCard)
+            } else if (total.fourOfAKind.length === 0 && total.extraCard !== null && currentCard.rank === total.extraCard.rank) {
+              total.fourOfAKind.push(currentCard, total.extraCard)
+              total.extraCard = null
+            }
+
+            return total
+          }
+
+          const thisBreakdown: FourOfAKindBreakDown = this.cards.reduce(reduceFn, {
+            fourOfAKind: [],
+            extraCard: null
+          })
+          const handBreakdown: FourOfAKindBreakDown = hand.cards.reduce(reduceFn, {
+            fourOfAKind: [],
+            extraCard: null
+          })
+          return thisBreakdown.fourOfAKind[0].rank > handBreakdown.fourOfAKind[0].rank
+        } else if (this.isFullHouse && hand.isFullHouse) {
           const getFullRank = (fullHouse: Card[]): Rank => {
             const ordered: Card[] = fullHouse.sort((a: Card, b: Card): number => {
               return b.rank - a.rank
@@ -130,7 +158,7 @@ class PusoyPlayedHand extends CardStack {
           const thisBreakdown: Rank = getFullRank(this.cards)
           const handBreakdown: Rank = getFullRank(hand.cards)
           return thisBreakdown > handBreakdown
-        } else if (this.isFlush) {
+        } else if (this.isFlush && hand.isFlush) {
           if (this.cards[0].suit === hand.cards[0].suit) {
             const greatestToLeast = (a: Card, b: Card) => {
               return b.rank - a.rank
@@ -140,13 +168,15 @@ class PusoyPlayedHand extends CardStack {
             return thisHighCard.beats(handHighCard)
           }
           return this.cards[0].suit > hand.cards[0].suit
-        } else if (this.isStraight) {
+        } else if (this.isStraight && hand.isStraight) {
           const greatestToLeast = (a: Card, b: Card) => {
             return b.rank - a.rank
           }
           const thisHighCard: Card = this.cards.sort(greatestToLeast)[0]
           const handHighCard: Card = hand.cards.sort(greatestToLeast)[0]
           return thisHighCard.beats(handHighCard)
+        } else {
+          throw new Error('Invalid hand combination')
         }
       }
       return this.fiveCardHandType > hand.fiveCardHandType

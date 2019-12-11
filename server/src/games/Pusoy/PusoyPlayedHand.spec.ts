@@ -564,6 +564,28 @@ describe('PusoyPlayedHand', () => {
       })
     })
 
+    describe('four of a kind', () => {
+      it('should beat the lowerFourOfAKind with the higherFourOfAKind', async () => {
+        const lowerFourOfAKind = new PusoyPlayedHand([
+          new Card(Suit.DIAMONDS, Rank.EIGHT),
+          new Card(Suit.SPADES, Rank.EIGHT),
+          new Card(Suit.CLUBS, Rank.EIGHT),
+          new Card(Suit.HEARTS, Rank.EIGHT),
+          new Card(Suit.SPADES, Rank.JACK),
+        ])
+
+        const higherFourOfAKind = new PusoyPlayedHand([
+          new Card(Suit.HEARTS, Rank.JACK),
+          new Card(Suit.DIAMONDS, Rank.JACK),
+          new Card(Suit.SPADES, Rank.JACK),
+          new Card(Suit.CLUBS, Rank.JACK),
+          new Card(Suit.SPADES, Rank.THREE),
+        ])
+
+        return expect(higherFourOfAKind.beats(lowerFourOfAKind)).toBeTruthy()
+      })
+    })
+
     it('should beat the straight flush with the royal flush', async () => {
       const royalFlush = new PusoyPlayedHand([
         new Card(Suit.DIAMONDS, Rank.TEN),
