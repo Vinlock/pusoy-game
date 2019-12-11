@@ -4,7 +4,8 @@
   "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node -r ts-node/register app/app.ts"
+    "start": "node -r ts-node/register app/app.ts",
+    "test": "jest --passWithNoTests"
   },
   "dependencies": {
     "socket.io": "^2.3.0",
