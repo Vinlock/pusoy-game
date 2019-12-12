@@ -20,23 +20,33 @@ class Deck extends CardStack {
     super()
     this.cards = []
     this.reset(withJokers)
+    this.shuffle(10)
+  }
+
+  public getCards(): Card[] {
+    return this.cards
   }
 
   public reset(withJokers: boolean = false): void {
     this.cards = Deck.getAllCards(withJokers)
-    this.shuffle(10)
   }
 
   public shuffle(times: number = 1): void {
     const deck = this.cards
     let numShuffles = times
     do {
-      for (let i = deck.length; i >= 0; i--) {
-        const j = Math.floor(Math.random() * i)
-        const temp = deck[i]
-        deck[i] = deck[j]
-        deck[j] = temp
+      let currentIndex = deck.length
+      let tempVal, randomIndex
+
+      while (0 !== currentIndex) {
+        randomIndex = Math.floor(Math.random() * currentIndex)
+        currentIndex -= 1
+        tempVal = deck[currentIndex]
+        deck[currentIndex] = deck[randomIndex]
+        deck[randomIndex] = tempVal
       }
+
+      this.cards = deck
       numShuffles--
     } while (numShuffles > 0)
   }
@@ -64,7 +74,7 @@ export class Card {
   }
 
   public is(card: Card): boolean {
-    return (card.rank === this.rank && card.suit === this.suit)
+    return card.rank === this.rank && card.suit === this.suit
   }
 
   public beats(card: Card): boolean {

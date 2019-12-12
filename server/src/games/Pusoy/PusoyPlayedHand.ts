@@ -11,6 +11,8 @@ allSuits.forEach((suit: Suit) => {
 
 
 class PusoyPlayedHand extends CardStack {
+  public readonly ownerId: string | null = null
+
   public readonly isValidHand: boolean = false
 
   public readonly isSingle: boolean = false
@@ -24,7 +26,7 @@ class PusoyPlayedHand extends CardStack {
   public readonly isFullHouse: boolean = false
   public readonly fiveCardHandType: HandRank
 
-  constructor(hand: Card[]) {
+  constructor(hand: Card[], ownerId: string | null = null) {
     super()
 
     // Check for duplicate cards
@@ -98,6 +100,10 @@ class PusoyPlayedHand extends CardStack {
     } else {
       throw new InvalidHand('Invalid set of cards.')
     }
+  }
+
+  public getCards(): Card[] {
+    return this.cards
   }
 
   public beats(hand: PusoyPlayedHand): boolean {
