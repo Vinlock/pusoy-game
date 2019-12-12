@@ -2,18 +2,28 @@ import { EventEmitter } from 'events'
 import CardStack from './CardStack'
 
 class Deck extends CardStack {
-  constructor() {
-    super()
-    this.cards = []
-    this.reset()
-  }
-
-  public reset(): void {
+  public static getAllCards(includeJokers = false): Card[] {
+    const cards: Card[] = []
     allSuits.forEach((suit: Suit) => {
       allRanks.forEach((rank: Rank) => {
-        this.cards.push(new Card(suit, rank))
+        cards.push(new Card(suit, rank))
       })
     })
+    if (includeJokers) {
+      cards.push(new Card(Suit.JOKER, Rank.JOKER))
+      cards.push(new Card(Suit.JOKER, Rank.JOKER))
+    }
+    return cards
+  }
+
+  constructor(withJokers: boolean = false) {
+    super()
+    this.cards = []
+    this.reset(withJokers)
+  }
+
+  public reset(withJokers: boolean = false): void {
+    this.cards = Deck.getAllCards(withJokers)
     this.shuffle(10)
   }
 
@@ -70,6 +80,7 @@ export enum Suit {
   SPADES = 1,
   HEARTS = 2 ,
   DIAMONDS = 3,
+  JOKER = 4,
 }
 
 export enum Rank {
@@ -86,6 +97,7 @@ export enum Rank {
   KING = 10,
   ACE = 11,
   TWO = 12,
+  JOKER = 13,
 }
 
 export const allSuits: Suit[] = [

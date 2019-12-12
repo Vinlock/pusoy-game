@@ -1,5 +1,5 @@
 import {Card, Rank, Suit} from '../../Deck'
-import PusoyPlayedHand from './PusoyPlayedHand'
+import PusoyPlayedHand, {InvalidHand, InvalidNumberOfCards} from './PusoyPlayedHand'
 
 describe('PusoyPlayedHand', () => {
   it('should fail to instantiate due to duplicate card', async () => {
@@ -9,7 +9,7 @@ describe('PusoyPlayedHand', () => {
       new Card(Suit.HEARTS, Rank.EIGHT),
       new Card(Suit.HEARTS, Rank.SEVEN),
       new Card(Suit.HEARTS, Rank.SIX),
-    ])).toThrow(new Error('Duplicate card detected'))
+    ])).toThrow(InvalidHand)
   })
 
   it('should fail to instantiate due to invalid number of cards', async () => {
@@ -17,12 +17,22 @@ describe('PusoyPlayedHand', () => {
       new Card(Suit.HEARTS, Rank.QUEEN),
       new Card(Suit.DIAMONDS, Rank.JACK),
       new Card(Suit.CLUBS, Rank.TEN),
-    ])).toThrow(new Error('Invalid number of cards, must be 1, 2, or 5'))
+    ])).toThrow(InvalidHand)
   })
 
   it('should fail to instantiate due to invalid number of cards', async () => {
     return expect(() => new PusoyPlayedHand([]))
-      .toThrow(new Error('Invalid number of cards, must be 1, 2, or 5'))
+      .toThrow(InvalidHand)
+  })
+
+  it('should fail to instantiate due to invalid set of cards', async () => {
+    return expect(() => new PusoyPlayedHand([
+      new Card(Suit.HEARTS, Rank.QUEEN),
+      new Card(Suit.HEARTS, Rank.TWO),
+      new Card(Suit.SPADES, Rank.FOUR),
+      new Card(Suit.HEARTS, Rank.SIX),
+      new Card(Suit.CLUBS, Rank.EIGHT),
+    ])).toThrow(InvalidHand)
   })
 
   describe('get isStraight()', () => {
@@ -41,8 +51,8 @@ describe('PusoyPlayedHand', () => {
     it('should NOT be a straight', async () => {
       const hand = new PusoyPlayedHand([
         new Card(Suit.HEARTS, Rank.FOUR),
-        new Card(Suit.HEARTS, Rank.EIGHT),
-        new Card(Suit.SPADES, Rank.EIGHT),
+        new Card(Suit.HEARTS, Rank.FIVE),
+        new Card(Suit.HEARTS, Rank.NINE),
         new Card(Suit.HEARTS, Rank.SEVEN),
         new Card(Suit.HEARTS, Rank.SIX),
       ])
@@ -54,9 +64,9 @@ describe('PusoyPlayedHand', () => {
       const hand = new PusoyPlayedHand([
         new Card(Suit.DIAMONDS, Rank.ACE),
         new Card(Suit.DIAMONDS, Rank.THREE),
-        new Card(Suit.HEARTS, Rank.FOUR),
+        new Card(Suit.DIAMONDS, Rank.FOUR),
         new Card(Suit.DIAMONDS, Rank.FIVE),
-        new Card(Suit.SPADES, Rank.TEN),
+        new Card(Suit.DIAMONDS, Rank.TEN),
       ])
 
       return expect(hand.isStraight).toBeFalsy()
@@ -78,23 +88,11 @@ describe('PusoyPlayedHand', () => {
 
     it('should NOT be a flush', async () => {
       const hand = new PusoyPlayedHand([
-        new Card(Suit.HEARTS, Rank.ACE),
-        new Card(Suit.DIAMONDS, Rank.THREE),
-        new Card(Suit.DIAMONDS, Rank.FOUR),
-        new Card(Suit.DIAMONDS, Rank.FIVE),
-        new Card(Suit.DIAMONDS, Rank.TEN),
-      ])
-
-      return expect(hand.isFlush).toBeFalsy()
-    })
-
-    it('should NOT be a flush', async () => {
-      const hand = new PusoyPlayedHand([
-        new Card(Suit.SPADES, Rank.ACE),
-        new Card(Suit.DIAMONDS, Rank.THREE),
         new Card(Suit.HEARTS, Rank.FOUR),
+        new Card(Suit.DIAMONDS, Rank.THREE),
         new Card(Suit.DIAMONDS, Rank.FIVE),
-        new Card(Suit.DIAMONDS, Rank.TEN),
+        new Card(Suit.DIAMONDS, Rank.SIX),
+        new Card(Suit.DIAMONDS, Rank.SEVEN),
       ])
 
       return expect(hand.isFlush).toBeFalsy()
@@ -183,7 +181,7 @@ describe('PusoyPlayedHand', () => {
         new Card(Suit.DIAMONDS, Rank.NINE),
         new Card(Suit.HEARTS, Rank.NINE),
         new Card(Suit.SPADES, Rank.NINE),
-        new Card(Suit.DIAMONDS, Rank.KING),
+        new Card(Suit.CLUBS, Rank.NINE),
         new Card(Suit.CLUBS, Rank.QUEEN),
       ])
 
@@ -217,7 +215,44 @@ describe('PusoyPlayedHand', () => {
     })
   })
 
+  describe('isDoubles', () => {
+    it('should be a doubles hand', async () => {
+      const hand = new PusoyPlayedHand([
+        new Card(Suit.DIAMONDS, Rank.QUEEN),
+        new Card(Suit.SPADES, Rank.QUEEN),
+      ])
+
+      return expect(hand.isDoubles).toBeTruthy()
+    })
+
+    it('should NOT be a doubles hand', async () => {
+      const hand = new PusoyPlayedHand([
+        new Card(Suit.SPADES, Rank.TEN),
+      ])
+
+      return expect(hand.isDoubles).toBeFalsy()
+    })
+  })
+
   describe('beats()', () => {
+    it('should fail due to comparing two hands of different numCards', async () => {
+      const doublesHand = new PusoyPlayedHand([
+        new Card(Suit.DIAMONDS, Rank.SEVEN),
+        new Card(Suit.SPADES, Rank.SEVEN),
+      ])
+
+      const fullHouse = new PusoyPlayedHand([
+        new Card(Suit.DIAMONDS, Rank.THREE),
+        new Card(Suit.SPADES, Rank.THREE),
+        new Card(Suit.CLUBS, Rank.THREE),
+        new Card(Suit.SPADES, Rank.FOUR),
+        new Card(Suit.DIAMONDS, Rank.FOUR),
+      ])
+
+      return expect(() => doublesHand.beats(fullHouse))
+        .toThrow(InvalidNumberOfCards)
+    })
+
     describe('royal flush', () => {
       it('should beat the lower suit royal flush with the higher suit royal flush (DIAMONDS vs SPADES)', async () => {
         const higherSuitRoyalFlush = new PusoyPlayedHand([
@@ -583,6 +618,84 @@ describe('PusoyPlayedHand', () => {
         ])
 
         return expect(higherFourOfAKind.beats(lowerFourOfAKind)).toBeTruthy()
+      })
+    })
+
+    describe('full house', () => {
+      it('should beat the lowerFullHouse with the higherFullHouse', async () => {
+        const lowerFullHouse = new PusoyPlayedHand([
+          new Card(Suit.DIAMONDS, Rank.FOUR),
+          new Card(Suit.SPADES, Rank.FOUR),
+          new Card(Suit.DIAMONDS, Rank.TEN),
+          new Card(Suit.CLUBS, Rank.TEN),
+          new Card(Suit.HEARTS, Rank.TEN),
+        ])
+
+        const higherFullHouse = new PusoyPlayedHand([
+          new Card(Suit.DIAMONDS, Rank.KING),
+          new Card(Suit.SPADES, Rank.KING),
+          new Card(Suit.HEARTS, Rank.KING),
+          new Card(Suit.SPADES, Rank.FOUR),
+          new Card(Suit.DIAMONDS, Rank.FOUR),
+        ])
+
+        return expect(higherFullHouse.beats(lowerFullHouse)).toBeTruthy()
+      })
+    })
+
+    describe('doubles', () => {
+      it('should beat the lowerDoubles with the higherDoubles (rank based)', async () => {
+        const lowerDoubles = new PusoyPlayedHand([
+          new Card(Suit.DIAMONDS, Rank.FIVE),
+          new Card(Suit.SPADES, Rank.FIVE),
+        ])
+
+        const higherDoubles = new PusoyPlayedHand([
+          new Card(Suit.DIAMONDS, Rank.SIX),
+          new Card(Suit.CLUBS, Rank.SIX),
+        ])
+
+        return expect(higherDoubles.beats(lowerDoubles)).toBeTruthy()
+      })
+
+      it('should beat the lowerDoubles with the higherDoubles (suit based)', async () => {
+        const lowerDoubles = new PusoyPlayedHand([
+          new Card(Suit.SPADES, Rank.FOUR),
+          new Card(Suit.HEARTS, Rank.FOUR),
+        ])
+
+        const higherDoubles = new PusoyPlayedHand([
+          new Card(Suit.DIAMONDS, Rank.FOUR),
+          new Card(Suit.CLUBS, Rank.FOUR),
+        ])
+
+        return expect(higherDoubles.beats(lowerDoubles)).toBeTruthy()
+      })
+    })
+
+    describe('singles', () => {
+      it('should beat the lowerSingle with the higherSingle (rank based)', async () => {
+        const lowerSingle = new PusoyPlayedHand([
+          new Card(Suit.HEARTS, Rank.FOUR),
+        ])
+
+        const higherSingle = new PusoyPlayedHand([
+          new Card(Suit.DIAMONDS, Rank.FIVE),
+        ])
+
+        return expect(higherSingle.beats(lowerSingle)).toBeTruthy()
+      })
+
+      it('should beat the lowerSingle with the higherSingle (suit based)', async () => {
+        const lowerSingle = new PusoyPlayedHand([
+          new Card(Suit.CLUBS, Rank.TEN),
+        ])
+
+        const higherSingle = new PusoyPlayedHand([
+          new Card(Suit.SPADES, Rank.TEN),
+        ])
+
+        return expect(higherSingle.beats(lowerSingle)).toBeTruthy()
       })
     })
 

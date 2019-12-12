@@ -1,12 +1,21 @@
-import { Card, Rank, Suit } from '../../Deck'
+import {allRanks, allSuits, Card, Rank, Suit} from '../../Deck'
 import CardStack from '../../CardStack'
+import CustomError from '../../utils/CustomError'
+
+const validCards = []
+allSuits.forEach((suit: Suit) => {
+  allRanks.forEach((rank: Rank) => {
+    validCards.push(new Card(suit, rank))
+  })
+})
+
 
 class PusoyPlayedHand extends CardStack {
   public readonly isValidHand: boolean = false
 
   public readonly isSingle: boolean = false
   public readonly isDoubles: boolean = false
-  public readonly fiveCardHand: boolean = false
+  public readonly isFiveCardHand: boolean = false
   public readonly isStraight: boolean = false
   public readonly isFlush: boolean = false
   public readonly isStraightFlush: boolean = false
@@ -18,55 +27,62 @@ class PusoyPlayedHand extends CardStack {
   constructor(hand: Card[]) {
     super()
 
+    // Check for duplicate cards
     const seen = new Set();
     const hasDuplicates = hand.some((card: Card) => {
       return seen.size === seen.add(`${card.rank}_${card.suit}`).size;
     });
 
     if (hasDuplicates) {
-      throw new Error('Duplicate card detected')
+      throw new DuplicateCardError('Duplicate card detected.')
     }
 
+    // Store cards
     this.cards = hand
 
+    // Determine hand type
     this.isSingle = this.numCards === 1
+
     if (!this.isSingle) {
       this.isDoubles = this.checkIsDoubles()
-      if (!this.isDoubles && this.numCards === 5) {
-        this.fiveCardHand = true
+    }
 
-        this.isStraight = this.checkIsStraight()
-        if (this.isStraight) {
-          this.fiveCardHandType = HandRank.STRAIGHT
-        }
+    if (!this.isDoubles && this.numCards === 5) {
+      this.isFiveCardHand = true
 
-        this.isFlush = this.checkIsFlush()
-        if (this.isFlush) {
-          this.fiveCardHandType = HandRank.FLUSH
-        }
-
-        this.isFullHouse = this.checkIsFullHouse()
-        if (this.isFullHouse) {
-          this.fiveCardHandType = HandRank.FULL_HOUSE
-        }
-
-        this.isFourOfAKind = this.checkIsFourOfAKind()
-        if (this.isFourOfAKind) {
-          this.fiveCardHandType = HandRank.FOUR_OF_A_KIND
-        }
-
-        this.isStraightFlush = this.isStraight && this.isFlush
-        if (this.isStraightFlush) {
-          this.fiveCardHandType = HandRank.STRAIGHT_FLUSH
-        }
-
-        this.isRoyalFlush = this.checkIsRoyalFlush()
-        if (this.isRoyalFlush) {
-          this.fiveCardHandType = HandRank.ROYAL_FLUSH
-        }
-      } else {
-        throw new Error('Invalid number of cards, must be 1, 2, or 5')
+      this.isStraight = this.checkIsStraight()
+      if (this.isStraight) {
+        this.fiveCardHandType = HandRank.STRAIGHT
       }
+
+      this.isFlush = this.checkIsFlush()
+      if (this.isFlush) {
+        this.fiveCardHandType = HandRank.FLUSH
+      }
+
+      this.isFullHouse = this.checkIsFullHouse()
+      if (this.isFullHouse) {
+        this.fiveCardHandType = HandRank.FULL_HOUSE
+      }
+
+      this.isFourOfAKind = this.checkIsFourOfAKind()
+      if (this.isFourOfAKind) {
+        this.fiveCardHandType = HandRank.FOUR_OF_A_KIND
+      }
+
+      this.isStraightFlush = this.isStraight && this.isFlush
+      if (this.isStraightFlush) {
+        this.fiveCardHandType = HandRank.STRAIGHT_FLUSH
+      }
+
+      this.isRoyalFlush = this.checkIsRoyalFlush()
+      if (this.isRoyalFlush) {
+        this.fiveCardHandType = HandRank.ROYAL_FLUSH
+      }
+    }
+
+    if (!this.isSingle && !this.isDoubles && !this.isFiveCardHand) {
+      throw new InvalidNumberOfCards(`Invalid number of cards, must be 1, 2, or 5. Received ${this.numCards}.`)
     }
 
     if ([
@@ -79,12 +95,14 @@ class PusoyPlayedHand extends CardStack {
       this.isFullHouse,
     ].some((test: boolean) => test) || (this.numCards === 1)) {
       this.isValidHand = true
+    } else {
+      throw new InvalidHand('Invalid set of cards.')
     }
   }
 
   public beats(hand: PusoyPlayedHand): boolean {
     if (hand.numCards !== this.numCards) {
-      throw new Error('Invalid number of cards, cannot be compared.')
+      throw new InvalidNumberOfCards('Hands contain a different number of cards.')
     }
 
     if (hand.isSingle) {
@@ -98,7 +116,7 @@ class PusoyPlayedHand extends CardStack {
         return thisHighSuit > opposingHighSuit
       }
       return thisRank > opposingRank
-    } else if (hand.fiveCardHand && this.fiveCardHandType) {
+    } else if (hand.isFiveCardHand && this.fiveCardHandType) {
       if (this.fiveCardHandType === hand.fiveCardHandType) {
         if (this.isRoyalFlush && hand.isRoyalFlush) {
           const thisCollectiveSuit: Suit = this.cards[0].suit
@@ -193,7 +211,9 @@ class PusoyPlayedHand extends CardStack {
       return false
     }
 
-    return this.cards[0].rank === this.cards[1].rank
+    return this.cards.every((card: Card) => {
+      return card.rank === this.cards[0].rank
+    })
   }
 
   private checkIsStraight(): boolean {
@@ -334,7 +354,11 @@ class PusoyPlayedHand extends CardStack {
   }
 }
 
-enum HandRank {
+export class InvalidHand extends CustomError {}
+export class DuplicateCardError extends InvalidHand {}
+export class InvalidNumberOfCards extends InvalidHand {}
+
+export enum HandRank {
   STRAIGHT = 0,
   FLUSH = 1,
   FULL_HOUSE = 2,
