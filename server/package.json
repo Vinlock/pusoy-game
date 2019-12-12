@@ -17,5 +17,8 @@
     "@types/uuid": "^3.4.6",
     "jest": "^24.9.0",
     "ts-jest": "^24.2.0"
-  }
+  },
+  "moduleFileExtensions": [
+    "ts"
+  ]
 }

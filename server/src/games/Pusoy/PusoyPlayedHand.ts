@@ -116,7 +116,7 @@ class PusoyPlayedHand extends CardStack {
         return thisHighSuit > opposingHighSuit
       }
       return thisRank > opposingRank
-    } else if (hand.isFiveCardHand && this.fiveCardHandType) {
+    } else if (hand.isFiveCardHand && this.fiveCardHandType !== null) {
       if (this.fiveCardHandType === hand.fiveCardHandType) {
         if (this.isRoyalFlush && hand.isRoyalFlush) {
           const thisCollectiveSuit: Suit = this.cards[0].suit
@@ -193,13 +193,10 @@ class PusoyPlayedHand extends CardStack {
           const thisHighCard: Card = this.cards.sort(greatestToLeast)[0]
           const handHighCard: Card = hand.cards.sort(greatestToLeast)[0]
           return thisHighCard.beats(handHighCard)
-        } else {
-          throw new Error('Invalid hand combination')
         }
       }
       return this.fiveCardHandType > hand.fiveCardHandType
     }
-    return false
   }
 
   public get numCards(): number {

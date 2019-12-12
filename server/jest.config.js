@@ -8,4 +8,10 @@ module.exports = {
   "transform": {
     "^.+\\.tsx?$": "ts-jest",
   },
+  "testFileExtensions": [
+    "ts",
+  ],
+  "moduleFileExtensions": [
+    "ts",
+  ],
 };

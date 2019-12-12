@@ -517,6 +517,48 @@ describe('PusoyPlayedHand', () => {
       })
     })
 
+    describe('straight', () => {
+      it('should beat the lowerStraight with the higherStraight (high suit)', async () => {
+        const lowerStraight = new PusoyPlayedHand([
+          new Card(Suit.DIAMONDS, Rank.THREE),
+          new Card(Suit.SPADES, Rank.FOUR),
+          new Card(Suit.SPADES, Rank.FIVE),
+          new Card(Suit.CLUBS, Rank.SIX),
+          new Card(Suit.CLUBS, Rank.SEVEN),
+        ])
+
+        const higherStraight = new PusoyPlayedHand([
+          new Card(Suit.SPADES, Rank.THREE),
+          new Card(Suit.CLUBS, Rank.FOUR),
+          new Card(Suit.CLUBS, Rank.FIVE),
+          new Card(Suit.SPADES, Rank.SIX),
+          new Card(Suit.DIAMONDS, Rank.SEVEN),
+        ])
+
+        return expect(higherStraight.beats(lowerStraight)).toBeTruthy()
+      })
+
+      it('should beat the lowerStraight with the higherStraight (high rank)', async () => {
+        const lowerStraight = new PusoyPlayedHand([
+          new Card(Suit.DIAMONDS, Rank.THREE),
+          new Card(Suit.SPADES, Rank.FOUR),
+          new Card(Suit.SPADES, Rank.FIVE),
+          new Card(Suit.CLUBS, Rank.SIX),
+          new Card(Suit.CLUBS, Rank.SEVEN),
+        ])
+
+        const higherStraight = new PusoyPlayedHand([
+          new Card(Suit.SPADES, Rank.FOUR),
+          new Card(Suit.CLUBS, Rank.FIVE),
+          new Card(Suit.CLUBS, Rank.SIX),
+          new Card(Suit.SPADES, Rank.SEVEN),
+          new Card(Suit.DIAMONDS, Rank.EIGHT),
+        ])
+
+        return expect(higherStraight.beats(lowerStraight)).toBeTruthy()
+      })
+    })
+
     describe('straight flush', () => {
       it('should beat the lowerStraightFlush with the higherStraightFlush (DIAMONDS - HIGH CARD)', async () => {
         const lowerStraightFlush = new PusoyPlayedHand([
@@ -596,6 +638,26 @@ describe('PusoyPlayedHand', () => {
         ])
 
         return expect(higherStraightFlush.beats(lowerStraightFlush)).toBeTruthy()
+      })
+
+      it('should be the lowerStraightFlush with the higherStraightFlush (high suit)', async () => {
+        const lowerStraightFlush = new PusoyPlayedHand([
+          new Card(Suit.CLUBS, Rank.TEN),
+          new Card(Suit.CLUBS, Rank.NINE),
+          new Card(Suit.CLUBS, Rank.EIGHT),
+          new Card(Suit.CLUBS, Rank.SEVEN),
+          new Card(Suit.CLUBS, Rank.SIX),
+        ])
+
+        const highStraightFlush = new PusoyPlayedHand([
+          new Card(Suit.SPADES, Rank.TEN),
+          new Card(Suit.SPADES, Rank.NINE),
+          new Card(Suit.SPADES, Rank.EIGHT),
+          new Card(Suit.SPADES, Rank.SEVEN),
+          new Card(Suit.SPADES, Rank.SIX),
+        ])
+
+        return expect(highStraightFlush.beats(lowerStraightFlush)).toBeTruthy()
       })
     })
 
