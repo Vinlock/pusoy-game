@@ -1,4 +1,4 @@
-import {allRanks, allSuits, Card, Rank, Suit} from '../../Deck'
+import { allRanks, allSuits, Card, Rank, Suit } from '../../Deck'
 import CardStack from '../../CardStack'
 import CustomError from '../../utils/CustomError'
 
