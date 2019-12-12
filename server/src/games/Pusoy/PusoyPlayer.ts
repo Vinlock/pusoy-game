@@ -6,10 +6,13 @@ import CustomError from '../../utils/CustomError'
 class PusoyPlayer {
   public readonly id: string
 
+  public readonly playerNumber: number
+
   private hand: Card[] = []
 
-  constructor() {
+  constructor(playerNumber: number) {
     this.id = uuid()
+    this.playerNumber = playerNumber
   }
 
   public get cardsInHand(): Card[] {

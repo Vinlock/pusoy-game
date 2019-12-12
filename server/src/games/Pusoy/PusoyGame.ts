@@ -30,8 +30,8 @@ class PusoyGame extends Game {
 
   constructor(numPlayers: number) {
     super()
-    Array.from(Array(numPlayers)).forEach(() => {
-      this.players.push(new PusoyPlayer())
+    Array.from(Array(numPlayers)).forEach((_, index: number) => {
+      this.players.push(new PusoyPlayer(index))
     })
   }
 
@@ -44,6 +44,10 @@ class PusoyGame extends Game {
   }
 
   startGame(): void {
+    if (this.gameIsStarted) {
+      throw new GameError('Cannot start an already started game.')
+    }
+
     // Find number of cards to deal
     let numCardsToDeal = Math.floor(this.deck.numCards / this.numPlayers)
     if (numCardsToDeal > MAX_CARDS_TO_DEAL) {
@@ -51,11 +55,11 @@ class PusoyGame extends Game {
     }
 
     // Deal hands
-    for (let i = 0; i < numCardsToDeal; i++) {
+    Array.from(Array(numCardsToDeal)).forEach(() => {
       this.players.forEach((player: PusoyPlayer) => {
         this.playerDraw(player.id)
       })
-    }
+    })
 
     // Setup Turn
     this.currentTurn.player = this.players.pop()
@@ -193,7 +197,8 @@ export type Turn = {
   numPasses: number,
 }
 
-export class PlayerNotFound extends CustomError {}
-export class WrongTurn extends CustomError {}
+export class GameError extends CustomError {}
+export class PlayerNotFound extends GameError {}
+export class WrongTurn extends GameError {}
 
 export default PusoyGame
