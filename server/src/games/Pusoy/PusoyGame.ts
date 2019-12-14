@@ -14,22 +14,45 @@ const MAX_CARDS_TO_DEAL = 15
  * @extends Game
  */
 class PusoyGame extends Game {
+  /**
+   * Game is started
+   */
   private gameIsStarted: boolean = false
 
+  /**
+   * List of players
+   */
   private players: PusoyPlayer[] = []
 
+  /**
+   * The deck to play from
+   */
   private deck: Deck = new Deck()
 
+  /**
+   * The play pile
+   */
   private playPile: PusoyPile = new PusoyPile()
 
+  /**
+   * List of winning players
+   */
   private winningPlayers: PusoyPlayer[] = []
 
+  /**
+   * Current Turn Data
+   */
   private currentTurn: Turn = {
     player: null,
     handToBeat: null,
     numPasses: 0,
   }
 
+  /**
+   * PusoyGame Constructor
+   * @param {number} numPlayers Number of players to start the game with
+   * @constructor
+   */
   constructor(numPlayers: number) {
     super()
     Array.from(Array(numPlayers)).forEach((_, index: number) => {
@@ -37,6 +60,10 @@ class PusoyGame extends Game {
     })
   }
 
+  /**
+   * Get number of players
+   * @returns {number} Number of active players in the game
+   */
   public get numPlayers(): number {
     let num = this.players.length
     if (this.currentTurn.player) {
@@ -45,6 +72,11 @@ class PusoyGame extends Game {
     return num
   }
 
+  /**
+   * Start Game
+   * @throws {GameError} Trying to start an already started game
+   * @fires PusoyGame:game_started
+   */
   startGame(): void {
     if (this.gameIsStarted) {
       throw new GameError('Cannot start an already started game.')
@@ -70,7 +102,7 @@ class PusoyGame extends Game {
 
     // Start Game
     this.gameIsStarted = true
-    this.emit('start_game', this)
+    this.emit('game_started', this)
   }
 
   /**
@@ -117,11 +149,15 @@ class PusoyGame extends Game {
     this.currentTurn.handToBeat = playedHand
     this.emit('hand_played', playedHand, this)
 
+    // Check if they have won
     if (player.cardsInHand.length === 0) {
       // Player wins
       this.winningPlayers.push(player)
       const place = this.winningPlayers.length
       this.emit('player_win', player, place, this)
+      if (this.numPlayers === 1) {
+        this.endGame()
+      }
     }
 
     // Reset numPasses
@@ -133,6 +169,11 @@ class PusoyGame extends Game {
     return true
   }
 
+  /**
+   * Pass player turn
+   * @param {string} playerId Player ID
+   * @returns {boolean} Successfully passed
+   */
   public playerPass(playerId: string): boolean {
     this.confirmPlayerTurn(playerId)
 
@@ -157,20 +198,47 @@ class PusoyGame extends Game {
     return true
   }
 
+  /**
+   * End Game
+   * @fires PusoyGame:game_over (PusoyGame)
+   */
+  public endGame(): void {
+    this.emit('game_over', this)
+  }
+
+  /**
+   * Check if it is the current player's turn or throw
+   * @param {string} playerId Player ID
+   * @throws {WrongTurn}
+   */
   public confirmPlayerTurn(playerId: string) {
     if (!this.isPlayersTurn(playerId)) {
       throw new WrongTurn('It must be the player\'s turn to take this action.')
     }
   }
 
+  /**
+   * Check if it is the current player's turn
+   * @param {string} playerId Player ID
+   */
   public isPlayersTurn(playerId: string) {
     return this.currentTurn.player.id === playerId
   }
 
+  /**
+   * Check if the game is started
+   * @returns {boolean} Game Started?
+   */
   public isGameStarted(): boolean {
     return this.gameIsStarted
   }
 
+  /**
+   * Get Player by ID
+   * @param {string} playerId Player ID
+   * @throws {PlayerNotFound} Player ID could not be found
+   * @returns {PusoyPlayer} Players Found
+   */
   public getPlayerById(playerId: string): PusoyPlayer {
     const player = this.players.find((player: PusoyPlayer) => {
       return player.id === playerId
