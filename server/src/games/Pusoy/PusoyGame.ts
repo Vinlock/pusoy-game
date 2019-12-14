@@ -22,6 +22,8 @@ class PusoyGame extends Game {
 
   private playPile: PusoyPile = new PusoyPile()
 
+  private winningPlayers: PusoyPlayer[] = []
+
   private currentTurn: Turn = {
     player: null,
     handToBeat: null,
@@ -115,6 +117,13 @@ class PusoyGame extends Game {
     this.currentTurn.handToBeat = playedHand
     this.emit('hand_played', playedHand, this)
 
+    if (player.cardsInHand.length === 0) {
+      // Player wins
+      this.winningPlayers.push(player)
+      const place = this.winningPlayers.length
+      this.emit('player_win', player, place, this)
+    }
+
     // Reset numPasses
     this.currentTurn.numPasses = 0
 
@@ -177,7 +186,14 @@ class PusoyGame extends Game {
    * @fires PusoyGame:turn_change (PusoyPlayer, PusoyGame)
    */
   public nextTurn(): void {
-    this.players.push(this.currentTurn.player)
+    const hasWon = Boolean(this.winningPlayers.find((player: PusoyPlayer) => {
+      return player.id === this.currentTurn.player.id
+    }))
+
+    if (!hasWon) {
+      this.players.push(this.currentTurn.player)
+    }
+
     this.currentTurn.player = this.players.pop()
     this.emit('turn_change', this.currentTurn.player, this)
   }

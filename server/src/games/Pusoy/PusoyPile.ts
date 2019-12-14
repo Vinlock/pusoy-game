@@ -1,4 +1,3 @@
-import { Card } from '../../Deck'
 import PusoyPlayedHand from './PusoyPlayedHand'
 
 class PusoyPile {
@@ -13,7 +12,11 @@ class PusoyPile {
   }
 
   public playHand(hand: PusoyPlayedHand, allPassed: boolean = false): boolean {
-    if (allPassed || hand.beats(this.lastHand)) {
+    let anyHandAllowed = allPassed
+    if (this.numHandsPlayed === 0) {
+      anyHandAllowed = true
+    }
+    if (anyHandAllowed || hand.beats(this.lastHand)) {
       this.playedHands.push(hand)
       return true
     }

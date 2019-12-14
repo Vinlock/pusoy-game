@@ -10,9 +10,15 @@ class PusoyPlayer {
 
   private hand: Card[] = []
 
-  constructor(playerNumber: number) {
+  constructor(playerNumber: number, hand: Card[] = []) {
     this.id = uuid()
     this.playerNumber = playerNumber
+
+    if (hand.length > 0) {
+      hand.forEach((card: Card) => {
+        this.addCardToHand(card)
+      })
+    }
   }
 
   public get cardsInHand(): Card[] {
@@ -48,7 +54,8 @@ class PusoyPlayer {
    */
   public playHand(playedHand: PusoyPlayedHand): boolean {
     const indexesToDelete: number[] = []
-    playedHand.getCards().forEach((card: Card) => {
+    const playedHandCards = playedHand.getCards()
+    playedHandCards.forEach((card: Card) => {
       const foundIndex: number = this.hand.findIndex((c: Card, index: number) => {
         return card.is(c) && !indexesToDelete.includes(index)
       })
