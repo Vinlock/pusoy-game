@@ -4,7 +4,8 @@
   "license": "MIT",
   "private": true,
   "workspaces": [
-    "server"
+    "server",
+    "client"
   ],
   "scripts": {
     "test": "jest --passWithNoTests"
