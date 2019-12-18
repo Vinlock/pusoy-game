@@ -1,5 +1,5 @@
-import { Card } from '../../Deck'
-import CardStack from '../../CardStack'
+import { Card } from '../Deck'
+import CardStack from '../CardStack'
 
 class PusoyHand extends CardStack {
   constructor(cards: Card[] = []) {

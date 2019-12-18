@@ -1,9 +1,10 @@
 import Game from '../Game'
 import PusoyPlayer from './PusoyPlayer'
-import Deck, { Card } from '../../Deck'
+import Deck, { Card } from '../Deck'
 import PusoyPile from './PusoyPile'
 import PusoyPlayedHand from './PusoyPlayedHand'
-import CustomError from '../../utils/CustomError'
+import CustomError from '../../../utils/CustomError'
+import User from '../../User'
 
 const MAX_CARDS_TO_DEAL = 15
 
@@ -50,13 +51,13 @@ class PusoyGame extends Game {
 
   /**
    * PusoyGame Constructor
-   * @param {number} numPlayers Number of players to start the game with
+   * @param {User[]} users Users
    * @constructor
    */
-  constructor(numPlayers: number) {
+  constructor(users: User[]) {
     super()
-    Array.from(Array(numPlayers)).forEach((_, index: number) => {
-      this.players.push(new PusoyPlayer(index))
+    users.forEach((user: User) => {
+      this.players.push(new PusoyPlayer(user))
     })
   }
 

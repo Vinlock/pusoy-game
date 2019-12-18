@@ -1,5 +1,5 @@
 import PusoyPlayer from './PusoyPlayer'
-import {Card, Rank, Suit} from '../../Deck'
+import { Card, Rank, Suit } from '../Deck'
 import PusoyPlayedHand from './PusoyPlayedHand'
 
 describe('PusoyPlayer', () => {

@@ -1,5 +1,5 @@
-import {Card, Rank, Suit} from '../../Deck'
-import PusoyPlayedHand, {InvalidHand, InvalidNumberOfCards} from './PusoyPlayedHand'
+import { Card, Rank, Suit } from '../Deck'
+import PusoyPlayedHand, { InvalidHand, InvalidNumberOfCards } from './PusoyPlayedHand'
 
 describe('PusoyPlayedHand', () => {
   it('should fail to instantiate due to duplicate card', async () => {

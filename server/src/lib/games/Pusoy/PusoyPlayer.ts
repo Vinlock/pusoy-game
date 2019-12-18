@@ -1,24 +1,34 @@
 import * as uuid from 'uuid/v4'
-import { Card } from '../../Deck'
+import { Card } from '../Deck'
 import PusoyPlayedHand from './PusoyPlayedHand'
-import CustomError from '../../utils/CustomError'
+import CustomError from '../../../utils/CustomError'
+import Player from '../../Player'
+import User from '../../User'
 
-class PusoyPlayer {
+class PusoyPlayer extends Player {
   public readonly id: string
 
-  public readonly playerNumber: number
+  private playerNumber: number
 
   private hand: Card[] = []
 
-  constructor(playerNumber: number, hand: Card[] = []) {
+  constructor(user: User, hand: Card[] = []) {
+    super(user)
     this.id = uuid()
-    this.playerNumber = playerNumber
 
     if (hand.length > 0) {
       hand.forEach((card: Card) => {
         this.addCardToHand(card)
       })
     }
+  }
+
+  public get number(): number {
+    return this.playerNumber
+  }
+
+  public setPlayerNumber(num: number): void {
+    this.playerNumber = num
   }
 
   public get cardsInHand(): Card[] {
@@ -81,6 +91,9 @@ class PusoyPlayer {
     })
   }
 
+  /**
+   * Get Lowest Card
+   */
   public lowestCard(): Card {
     this.sortHandLowestToHighest()
     return this.hand[0]
