@@ -1,6 +1,6 @@
-import { allRanks, allSuits, Card, Rank, Suit } from '../../Deck'
-import CardStack from '../../CardStack'
-import CustomError from '../../utils/CustomError'
+import { allRanks, allSuits, Card, Rank, Suit } from '../Deck'
+import CardStack from '../CardStack'
+import CustomError from '../../../utils/CustomError'
 
 const validCards = []
 allSuits.forEach((suit: Suit) => {
